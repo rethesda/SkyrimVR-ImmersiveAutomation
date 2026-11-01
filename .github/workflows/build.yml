@@ -61,10 +61,11 @@ jobs:
 
       - uses: lukka/get-cmake@latest
 
-      # the baseline of fallout4/vcpkg.json, the one CommonLibF4 is built with
+      # the same vcpkg tool as above (older ones fail with the binary cache of GitHub Actions); the package
+      # versions come from the builtin-baseline of fallout4/vcpkg.json, the one CommonLibF4 is built with
       - uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: 4cfabe769eaceb209ea37267e8c50c43b86a4a7b
+          vcpkgGitCommitId: ee12231b20c95013c6638d845d04c91559a1d1ff
 
       - name: Configure
         working-directory: fallout4
