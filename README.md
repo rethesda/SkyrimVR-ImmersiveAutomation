@@ -20,6 +20,8 @@ Mod page: https://www.nexusmods.com/skyrimspecialedition/mods/18346
    http: see [Http switch](#http-switch).
 4. Start the game with `skse64_loader.exe` (VR: `sksevr_loader.exe`).
 
+After loading a save the game shows if the switch works (*Immersive Winds: connected*), so you see it without opening the log.
+
 On the first start the plugin writes all settings with their defaults to
 `Documents/My Games/<Skyrim Special Edition|Skyrim VR>/SKSE/immersiveWinds.ini`.
 The log is `ImmersiveWindsPluginScript.log` in the same folder (details with `bLoggingEnabled=1`).
@@ -43,9 +45,10 @@ Missing keys are added with their default value, existing values are never overw
 | Key | Default | |
 |---|---|---|
 | `sSwitchType` | `tplink` | `tplink` or `http` |
+| `sHomeAssistantUrl` | | address of Home Assistant, see [Home Assistant](#home-assistant). Replaces `sSwitchType` and the http settings |
 | `sPlugName` | `ImmersiveWindsPlug` | TP-Link: name of the plug in the Kasa app |
 | `bUseUdp` | `1` | TP-Link: send the commands with udp (`1`) or tcp (`0`) |
-| `iWindMode` | `0` | `0`: levels 0-6 (below). `1`: simulated wind, see [Simulated wind](#simulated-wind-iwindmode1) |
+| `iWindMode` | `1` | `1`: simulated wind, see [Simulated wind](#simulated-wind-iwindmode1). `0`: levels 0-6 (below) |
 | `bIntermittentModeEnabled` | `1` | `iWindMode=0` only. `1`: levels 0-6 with on/off patterns. `0`: simple mode, fan on outside, off inside |
 | `bNoWindInMenu` | `0` | `1`: fan off while a menu pauses the game |
 | `bLoggingEnabled` | `0` | detailed log |
@@ -144,6 +147,14 @@ The gusts are simulated by the plugin, the game has no gust values (tree movemen
 
 Tuning: start with the spin up and spin down times of your fan (switch it on and off and count). With `bLoggingEnabled=1` the log shows the base wind and the wind of the game every 3 seconds.
 
+## Home Assistant
+
+1. Import the [blueprint](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FSlowSoapSoak%2FSkyrimVR-ImmersiveAutomation%2Fblob%2Fmaster%2Fhomeassistant%2Fimmersive_switch.yaml) (`homeassistant/immersive_switch.yaml`).
+2. Create an automation from it, choose the mod and your device.
+3. Set `sHomeAssistantUrl=<ip of Home Assistant>` in `[GeneralModConfig]` of the ini.
+
+The plugins call the webhooks `ImmersiveWinds`, `ImmersiveHeat1` and `ImmersiveHeat2` with `?state=on` or `?state=off`. Create one automation per device.
+
 ## Http switch
 
 Set `sSwitchType=http` and the two urls. Any answer with status 2xx counts as success. Examples:
@@ -177,6 +188,7 @@ Upgrading from the test builds of *Immersive Sun*: delete `ImmersiveSunPluginScr
 |---|---|---|
 | `[GeneralModConfig]` | `bUseUdp`, `bLoggingEnabled` | `1`, `0` (as for the fan, for both TP-Link switches) |
 | | `bNoHeatInMenu` | `1` |
+| `[GeneralModConfig]` | `sHomeAssistantUrl` | address of Home Assistant, see [Home Assistant](#home-assistant) |
 | `[Switch1]`, `[Switch2]` | `sSwitchType` | `tplink` or `http` |
 | | `sPlugName` | `ImmersiveHeatPlug1`, `ImmersiveHeatPlug2` (TP-Link name in the Kasa app) |
 | | `sHttpMethod`, `sOnUrl`, `sOffUrl` | as for the fan's [http switch](#http-switch) |
@@ -196,6 +208,20 @@ Upgrading from the test builds of *Immersive Sun*: delete `ImmersiveSunPluginScr
 | | `fCheckIntervalSeconds` | `0.1`: time between two checks (the search for fire nearby runs once per second) |
 
 **Weather and lighting mods**: weathers of any mod work, the plugin reads sun glare and day hours from the weather and the climate. The light level at the player is computed by the game from the weather's sunlight and ambient colors, so weather and lighting mods that make the day darker or brighter (and ENB/Community Shaders not at all, they only change the picture) can need another `fMinLightLevel`: with `bLoggingEnabled=1` the log shows the light level, stand in the sun and in a shadow and set the value between both.
+
+## Fallout 4 / Fallout 4 VR
+
+`fallout4/` builds Immersive Winds for Fallout 4 as `ImmersiveWinds.dll`, one DLL for Fallout 4 (1.10.163 and the next gen update 1.10.980/984) and Fallout 4 VR (1.2.72). It uses the simulated wind (see above) with the same plug code and switch settings; the anniversary update (1.11) is not supported by the library yet.
+
+Requirements: [F4SE / F4SEVR](https://f4se.silverlock.org/) and the Address Library ([Fallout 4](https://www.nexusmods.com/fallout4/mods/47327), [Fallout 4 VR](https://www.nexusmods.com/fallout4/mods/64879)). Installation: copy the DLL to `Data/F4SE/Plugins`. The settings are in `Documents/My Games/Fallout4VR/F4SE/immersiveWinds.ini` (`Fallout4` for the flat game), the log is `ImmersiveWinds.log` next to it. The default plug name is the same as for Skyrim, so one fan serves both games.
+
+- Outside the base wind is `fOutsideMinWind` plus the wind of the weather in the game times `fGameWindScale`, so radstorms and weather mods are followed. Inside it is `fInsideWind` (`0`).
+- Motion wind as in Skyrim: running, the vertibird and falling add wind.
+- `[GeneralModConfig]`: `sSwitchType`, `sHomeAssistantUrl`, `sPlugName`, `bUseUdp`, `bLoggingEnabled`, `bNoWindInMenu` as above; the pip-boy does not pause the game and keeps the wind. `[HttpSwitch]` and `[SimulatedWind]` as above.
+- Like in Skyrim the fan stops when the game is in the background (flat game only), stands still, or exits.
+- Not yet: the shelter detection of buildings without a load screen and Immersive Heat.
+
+Build: `cmake --preset release` and `cmake --build --preset release` in `fallout4/`, set `FALLOUT4_DATA_DIR` to deploy. It uses [CommonLibF4](https://github.com/alandtse/CommonLibF4) (submodule `extern/CommonLibF4`).
 
 ## Building
 
