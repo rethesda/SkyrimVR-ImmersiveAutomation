@@ -202,6 +202,20 @@ Upgrading from the test builds of *Immersive Sun*: delete `ImmersiveSunPluginScr
 
 **Weather and lighting mods**: weathers of any mod work, the plugin reads sun glare and day hours from the weather and the climate. The light level at the player is computed by the game from the weather's sunlight and ambient colors, so weather and lighting mods that make the day darker or brighter (and ENB/Community Shaders not at all, they only change the picture) can need another `fMinLightLevel`: with `bLoggingEnabled=1` the log shows the light level, stand in the sun and in a shadow and set the value between both.
 
+## Fallout 4 / Fallout 4 VR
+
+`fallout4/` builds Immersive Winds for Fallout 4 as `ImmersiveWinds.dll`, one DLL for Fallout 4 (1.10.163 and the next gen update 1.10.980/984) and Fallout 4 VR (1.2.72). It uses the simulated wind (see above) with the same plug code and switch settings; the anniversary update (1.11) is not supported by the library yet.
+
+Requirements: [F4SE / F4SEVR](https://f4se.silverlock.org/) and the Address Library ([Fallout 4](https://www.nexusmods.com/fallout4/mods/47327), [Fallout 4 VR](https://www.nexusmods.com/fallout4/mods/64879)). Installation: copy the DLL to `Data/F4SE/Plugins`. The settings are in `Documents/My Games/Fallout4VR/F4SE/immersiveWinds.ini` (`Fallout4` for the flat game), the log is `ImmersiveWinds.log` next to it. The default plug name is the same as for Skyrim, so one fan serves both games.
+
+- Outside the base wind is `fOutsideMinWind` plus the wind of the weather in the game times `fGameWindScale`, so radstorms and weather mods are followed. Inside it is `fInsideWind` (`0`).
+- Motion wind as in Skyrim: running, the vertibird and falling add wind.
+- `[GeneralModConfig]`: `sSwitchType`, `sHomeAssistantUrl`, `sPlugName`, `bUseUdp`, `bLoggingEnabled`, `bNoWindInMenu` as above; the pip-boy does not pause the game and keeps the wind. `[HttpSwitch]` and `[SimulatedWind]` as above.
+- Like in Skyrim the fan stops when the game is in the background (flat game only), stands still, or exits.
+- Not yet: the shelter detection of buildings without a load screen and Immersive Heat.
+
+Build: `cmake --preset release` and `cmake --build --preset release` in `fallout4/`, set `FALLOUT4_DATA_DIR` to deploy. It uses [CommonLibF4](https://github.com/alandtse/CommonLibF4) (submodule `extern/CommonLibF4`).
+
 ## Building
 
 Needs Visual Studio 2022 (C++ workload), vcpkg (`VCPKG_ROOT`) and the git submodules.

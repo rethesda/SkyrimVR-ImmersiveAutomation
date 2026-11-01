@@ -47,3 +47,36 @@ jobs:
             build/ImmersiveHeat.dll
             build/ImmersiveHeat.pdb
             Winds/ImmersiveWindsVR.esp
+
+  # Immersive Winds for Fallout 4 / Fallout 4 VR, a separate CMake project in fallout4/
+  build-fallout4:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - uses: lukka/get-cmake@latest
+
+      # the baseline of fallout4/vcpkg.json, the one CommonLibF4 is built with
+      - uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 4cfabe769eaceb209ea37267e8c50c43b86a4a7b
+
+      - name: Configure
+        working-directory: fallout4
+        run: cmake --preset release
+
+      - name: Build
+        working-directory: fallout4
+        run: cmake --build --preset release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ImmersiveWindsFallout4
+          path: |
+            fallout4/build/ImmersiveWinds.dll
+            fallout4/build/ImmersiveWinds.pdb
