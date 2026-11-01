@@ -94,6 +94,7 @@ The level is the base value of the place plus the modifiers, at most 6. The shou
 | `bShelterDetection` | `1` | outside, but inside a building without a load screen (towers, ruins): counts as sheltered, see below |
 | `iShelteredBase` | `1` | level when sheltered, no outside modifiers |
 | `iShelterMinWalls` | `6` | of 8 directions around the player that have to hit a wall |
+| `bShelterDebug` | `0` | `1`: shows every change of the check in the game, to tune these settings |
 | `iShelterWallDistance` | `800` | how far the walls may be, game units (about 11 m) |
 | `iShelterRoofHeight` | `3000` | how high the roof may be, game units |
 | `sStormWeathers` | vanilla storms, True Storms, Vivid Weathers, Mythical Ages | weathers that are always storm, see below |

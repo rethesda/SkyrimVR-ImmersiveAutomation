@@ -102,6 +102,7 @@ namespace ImmersiveWinds {
 		int bShelterDetection = 0;
 		int iShelteredBase = 0;
 		int iShelterMinWalls = 0;
+		int bShelterDebug = 0;
 		int iShelterWallDistance = 0;
 		int iShelterRoofHeight = 0;
 
@@ -180,6 +181,7 @@ namespace ImmersiveWinds {
 			{ INI_LEVELS, "bShelterDetection", 1, &bShelterDetection },
 			{ INI_LEVELS, "iShelteredBase", 1, &iShelteredBase },
 			{ INI_LEVELS, "iShelterMinWalls", 6, &iShelterMinWalls },
+			{ INI_LEVELS, "bShelterDebug", 0, &bShelterDebug },
 			{ INI_LEVELS, "iShelterWallDistance", 800, &iShelterWallDistance },
 			{ INI_LEVELS, "iShelterRoofHeight", 3000, &iShelterRoofHeight },
 		};
@@ -1011,7 +1013,18 @@ namespace ImmersiveWinds {
 		}
 
 		LOG("Shelter: roof %s, walls %d of %d", roof ? "yes" : "no", walls, DIRECTIONS);
-		return roof && walls >= iShelterMinWalls;
+		const bool sheltered = roof && walls >= iShelterMinWalls;
+		if (bShelterDebug) { // shows every change on screen, to tune the settings
+			static int lastState = -1;
+			const int state = walls * 4 + (roof ? 2 : 0) + (sheltered ? 1 : 0);
+			if (state != lastState) {
+				lastState = state;
+				char message[80];
+				snprintf(message, sizeof(message), "%s: roof %s, walls %d of %d", sheltered ? "SHELTERED" : "outside", roof ? "yes" : "no", walls, DIRECTIONS);
+				RE::SendHUDMessage::ShowHUDMessage(message);
+			}
+		}
+		return sheltered;
 	}
 
 	// Tells the player once per game start if the switch works, so nobody has to read the log for that.
