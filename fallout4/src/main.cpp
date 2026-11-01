@@ -4,8 +4,8 @@
 
 namespace
 {
-	const char * PLUGIN_NAME = "ImmersiveWinds";
-	const char * PLUGIN_AUTHOR = "madrum";
+	constexpr const char * PLUGIN_NAME = "ImmersiveWinds";
+	constexpr const char * PLUGIN_AUTHOR = "madrum";
 	constexpr REL::Version PLUGIN_VERSION{ 1, 0, 0, 0 };
 
 	void SetupLog()
